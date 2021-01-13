@@ -22,6 +22,6 @@ const create = (req, res) =>
 
 router.get("/", all);
 router.get("/:id", single);
-router.post("/create", create);
+router.post("/", create);
 
 module.exports = router;

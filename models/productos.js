@@ -1,28 +1,45 @@
-const { pool, ObjectId } = require("./../utils/db");
+const e = require("express");
+const { pool } = require("./../utils/db");
+const { ObjectId } = require("mongodb");
+
 const PRODUCTOS_COLLECTION = "productos";
 
-const getList = async ({
-  conditions = {},
-  projection = {},
-  sort = {},
-  limit = 50,
-}) => {
+const getList = async ({ categoria }) => {
   try {
     console.log(conditions);
     return (await pool())
       .collection(PRODUCTOS_COLLECTION)
-      .find(conditions, { projection })
-      .sort(sort)
-      .limit(limit)
+      .find(categoria, { $eq: categoria })
+      .sort({ name: 1 })
+      .projection({ nombre: 1, descripcion: 1, precio: 1, imagen: 1, stock: 1 })
+
       .toArray();
   } catch (e) {
     throw e;
   }
 };
 
+/*getProducto = async (id) => {
+  try {
+    return (await pool()).collection(PRODUCTOS_COLLECTION).findOne({ id });
+  } catch (error) {
+    console.log(error);
+    throw e;
+  }
+};*/
+
 const create = async (obj) => {
   try {
-    const { nombre, precio, descripcion, color, marca, stock, categoria } = obj;
+    const {
+      nombre,
+      precio,
+      descripcion,
+      color,
+      marca,
+      stock,
+      categoria,
+      imagen,
+    } = obj;
 
     const producto = {
       nombre,
@@ -32,8 +49,11 @@ const create = async (obj) => {
       marca,
       stock,
       categoria,
+      imagen,
     };
-    const [_id] = (await pool()).collection("productos").insertOne(producto); // [4]
+    const _id = await (await pool())
+      .collection("productos")
+      .insertOne(producto); // [4]
 
     return producto;
   } catch (e) {

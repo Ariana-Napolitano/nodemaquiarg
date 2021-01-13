@@ -1,4 +1,5 @@
-const { pool, ObjectId } = require("./../utils/db");
+const { pool } = require("./../utils/db");
+const { ObjectId } = require("mongodb");
 const { v4: uuid } = require("uuid");
 const sha1 = require("sha1");
 const { send } = require("./../services/mail");
@@ -28,26 +29,30 @@ const create = async (obj) => {
     const { nombre, apellido, mail, direccionEnvio, password } = obj;
 
     const persona = { nombre, apellido, mail, direccionEnvio };
-    const [idPersona] = (await pool())
+    const result = await (await pool())
       .collection("personas")
       .insertOne(persona); // [4]
     const user = {
       mail,
       password: sha1(password),
-      idPersona,
+      idPersona: result.insertedId,
       confirmacionCorreo: uuid(),
+      carrito: [],
+      habilitado: true,
     };
 
-    const [idUsuario] = (await pool()).collection("usuarios").insertOne(user);
+    const idUsuario = await (await pool())
+      .collection("usuarios")
+      .insertOne(user);
     //return idUsuario;
     // envie un mail
 
     const messageId = await send({
-      to: mail,
+      to: user.mail,
       subject: "Gracias por registrate",
-      html: "Envio de link unico para validar cuenta",
+      html: `Envio de link unico para validar cuenta ${user.confirmacionCorreo}`,
     });
-    return messageId;
+    return user;
   } catch (e) {
     console.log(e);
   }
@@ -62,6 +67,15 @@ const findById = async (_id) => {
   }
 };
 
+/*const logg = async (mail, password) => {
+  try {
+    (await pool()).collection(USUARIOS_COLLECTION).find(mail, password);
+  } catch (e) {
+    console.log(e);
+    throw e;
+  }
+};
+*/
 const modifyById = async (id, obj) =>
   (await pool())
     .collection(USUARIOS_COLLECTION)

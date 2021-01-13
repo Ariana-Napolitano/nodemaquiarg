@@ -11,14 +11,14 @@ const createToken = (payload) => jwt.sign(payload, privateKey, signOptions);
 
 const auth = async (req, res) => {
   try {
-    const { usuario, password } = req.body;
-    const [user] = await service.authenticate(usuario, sha1(password));
+    const { mail, password } = req.body;
+    const user = await service.authenticate(mail, sha1(password));
     console.log(user);
     if (!user) res.sendStatus(401);
     if (!user.habilitado) res.sendStatus(401);
     if (user.habilitado) {
-      const token = createToken({ id: user.id }); // sql
-      res.status(200).json({ JWT: token, info: { usuario } });
+      const token = createToken({ id: user._id }); // sql
+      res.status(200).json({ JWT: token, info: { user } });
     }
   } catch (e) {
     console.log(e);
