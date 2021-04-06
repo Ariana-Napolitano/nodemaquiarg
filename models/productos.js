@@ -1,20 +1,21 @@
 const e = require("express");
 const { pool } = require("./../utils/db");
 const { ObjectId } = require("mongodb");
+const { imgFile } = require("../utils/fileHandler");
 
 const PRODUCTOS_COLLECTION = "productos";
 
-const getList = async ({ categoria }) => {
+const getList = async (categoria) => {
   try {
-    console.log(conditions);
     return (await pool())
       .collection(PRODUCTOS_COLLECTION)
-      .find(categoria, { $eq: categoria })
-      .sort({ name: 1 })
-      .projection({ nombre: 1, descripcion: 1, precio: 1, imagen: 1, stock: 1 })
+      .find({ categoria: { $eq: categoria } })
+      .sort({ nombre: 1 })
+      .project({ nombre: 1, descripcion: 1, precio: 1, imagen: 1, stock: 1 })
 
       .toArray();
   } catch (e) {
+    console.log(e);
     throw e;
   }
 };
@@ -30,26 +31,33 @@ const getList = async ({ categoria }) => {
 
 const create = async (obj) => {
   try {
+    const handledImage = await imgFile(req.file);
     const {
       nombre,
       precio,
       descripcion,
-      color,
+      colores: [{}],
       marca,
-      stock,
-      categoria,
-      imagen,
+      categorias: [],
+    } = req.body;
+    const {
+      nombre,
+      precio,
+      descripcion,
+      colores: [{}],
+      marca,
+      categorias: [],
+      imagen: handledImage,
     } = obj;
 
     const producto = {
       nombre,
       precio,
       descripcion,
-      color,
+      colores: [{}],
       marca,
-      stock,
-      categoria,
-      imagen,
+      categorias: [],
+      imagen: handledImage,
     };
     const _id = await (await pool())
       .collection("productos")

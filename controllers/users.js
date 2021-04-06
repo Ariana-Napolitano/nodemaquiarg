@@ -1,18 +1,19 @@
 var express = require("express");
-const { validateCreate } = require("../middlewares/users");
-const { create } = require("./../models/users");
+
+const model = require("./../models/users");
 const { update } = require("../models/carrito");
+
 var router = express.Router();
 
 const confirm = (req, res) =>
-  service
-    .update({ obj: { habilitado: true }, confirmacionCorreo: req.params.uuid })
+  model
+    .confirmUser(req.params.uuid)
     .then((response) => res.json(response))
-    .catch((e) => res.status(500).json(e));
+    .catch((e) => res.sendStatus(500));
 
 router.get("/confirm/:uuid", confirm);
 
-router.post("/create", validateCreate, create);
+//router.post("/create", validateCreate, create);
 router.put("/:id/carrito", async (req, res) => {
   if (!req.body.carrito) {
     res.status(400).json({

@@ -26,7 +26,7 @@ const getList = async ({
 
 const create = async (obj) => {
   try {
-    const { nombre, apellido, mail, direccionEnvio, password } = obj;
+    const { nombre, apellido, mail, direccionEnvio, password, role } = obj;
 
     const persona = { nombre, apellido, mail, direccionEnvio };
     const result = await (await pool())
@@ -38,7 +38,8 @@ const create = async (obj) => {
       idPersona: result.insertedId,
       confirmacionCorreo: uuid(),
       carrito: [],
-      habilitado: true,
+      habilitado: false,
+      role,
     };
 
     const idUsuario = await (await pool())
@@ -50,7 +51,7 @@ const create = async (obj) => {
     const messageId = await send({
       to: user.mail,
       subject: "Gracias por registrate",
-      html: `Envio de link unico para validar cuenta ${user.confirmacionCorreo}`,
+      html: `Envio de link unico para validar cuenta http://localhost:3000/confirm/${user.confirmacionCorreo}`,
     });
     return user;
   } catch (e) {
@@ -81,4 +82,12 @@ const modifyById = async (id, obj) =>
     .collection(USUARIOS_COLLECTION)
     .updateOne({ _id: `ObjectId(${id})` }, { $set: `${obj}` });
 
-module.exports = { getList, create, findById, modifyById };
+const confirmUser = async (uuid) =>
+  (await pool())
+    .collection(USUARIOS_COLLECTION)
+    .updateOne(
+      { confirmacionCorreo: `${uuid}` },
+      { $set: { habilitado: true } }
+    );
+
+module.exports = { getList, create, findById, modifyById, confirmUser };

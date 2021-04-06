@@ -17,8 +17,8 @@ const auth = async (req, res) => {
     if (!user) res.sendStatus(401);
     if (!user.habilitado) res.sendStatus(401);
     if (user.habilitado) {
-      const token = createToken({ id: user._id }); // sql
-      res.status(200).json({ JWT: token, info: { user } });
+      const token = createToken({ id: user._id, role: user.role });
+      res.status(200).json({ jwt: token, info: { user } });
     }
   } catch (e) {
     console.log(e);

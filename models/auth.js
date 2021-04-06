@@ -14,6 +14,20 @@ const authenticate = async (mail, password) => {
     throw e;
   }
 };
+
+const isAdmin = async (req, res, next) => {
+  const user = await pool().collection("usuarios").findById(req._id);
+  const roles = await (await pool())
+    .collection("roles")
+    .find({ _id: { $in: user.roles } });
+  for (let i = 0; i < roles.length; i++) {
+    if (roles[i].name === "admin") {
+      next();
+      return;
+    }
+  }
+  return res.status(403).json({ message: "requiere ser admin" });
+};
 // return []
 // return [{}]
-module.exports = { authenticate };
+module.exports = { authenticate, isAdmin };
